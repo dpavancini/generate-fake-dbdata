@@ -5,14 +5,14 @@ import random
 import datetime 
 
 # Set up connections between sqlalchemy and postgres dbapi
-# Instantiate metadate object
-engine = create_engine("postgresql://postgres:postgres@localhost:5432/simulated")
+# Instantiate metadata object
+engine = create_engine("postgresql://postgres:postgres@localhost:5432/fakedata")
 metadata = MetaData()
 
 # Instantiate faker object
 faker = Faker()
 
-# Reflect metadata/schema from existing postgres table to bring in existing tables 
+# Reflect metadata/schema from existing postgres database to bring in existing tables 
 with engine.connect() as conn: 
     metadata.reflect(conn)
 
@@ -37,7 +37,7 @@ class GenerateData:
         initialize command line arguments
         """
         self.table = sys.argv[1]
-        self.num_transactions = int(sys.argv[2])
+        self.num_records = int(sys.argv[2])
 
     
     def create_data(self):
@@ -46,11 +46,11 @@ class GenerateData:
         """
         
         if self.table not in metadata.tables.keys():
-            return f"{self.table} does not exist"
+            return print(f"{self.table} does not exist")
 
         if self.table == "customers":
             with engine.begin() as conn:
-                for _ in range(self.num_transactions):
+                for _ in range(self.num_records):
                     insert_stmt = customers.insert().values(
                         first_name = faker.first_name(),
                         last_name = faker.last_name(),
@@ -62,7 +62,7 @@ class GenerateData:
 
         if self.table == "products":
             with engine.begin() as conn:
-                for _ in range(self.num_transactions):
+                for _ in range(self.num_records):
                     insert_stmt = products.insert().values(
                         name = random.choice(product_list),
                         price = faker.random_int(1,100000) / 100.0
@@ -71,7 +71,7 @@ class GenerateData:
 
         if self.table == "stores":
             with engine.begin() as conn:
-                for _ in range(self.num_transactions):
+                for _ in range(self.num_records):
                     insert_stmt = stores.insert().values(
                         address = faker.address()
                     )
@@ -79,7 +79,7 @@ class GenerateData:
 
         if self.table == "transactions":
             with engine.begin() as conn:
-                for _ in range(self.num_transactions):
+                for _ in range(self.num_records):
                     date_obj = datetime.datetime.now() - datetime.timedelta(days=random.randint(0,30))
 
                     insert_stmt = transactions.insert().values(
